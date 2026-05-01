@@ -3,6 +3,35 @@
 #include <iostream>
 #include <algorithm>
 
+struct Input {
+	bool aPressed = false;
+	bool dPressed = false;
+	bool jump = false;
+};
+
+struct Player {
+	sf::Vector2f pos{100, 0};
+	sf::Vector2f vel{0,0};
+	bool onGround = false;
+	sf::RectangleShape shape;
+
+	void apply_velocity(const sf::Vector2f v) {
+		vel.x += v.x;
+		vel.y += v.y;
+	}
+	void set_velocity(const sf::Vector2f v) {
+		vel = v;
+	}
+	void move(const sf::Vector2f v) {
+		pos += v;
+		shape.move(v);
+	}
+	void setPosition(const sf::Vector2f v) {
+		pos = v;
+		shape.setPosition(v);
+	}
+};
+
 int main() {
 	// sol::state lua;
 	// lua.open_libraries(sol::lib::base);
@@ -13,19 +42,18 @@ int main() {
 
 	bool running = true;
 
-	sf::RectangleShape player({50, 100});
-	player.setPosition({100, 100});
-	player.setFillColor(sf::Color::Red);
-	sf::Vector2f playerVelocity = {0, 0};
+	Player player;
+	player.shape = sf::RectangleShape({50, 100});
+	player.shape.setPosition({100, 100});
+	player.shape.setFillColor(sf::Color::Red);
+
+	Input input;
 
 	sf::Clock clock;
 	float dt = clock.restart().asSeconds();
 	bool isJumping = false;
-	bool isMoving = false;
 
 	while (running) {
-		isMoving = false;
-
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>()) {
 				running = false;
@@ -33,40 +61,40 @@ int main() {
 			}
 		}
 
+		input = {false, false, input.jump};
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-			isMoving = true;
-			playerVelocity.x -= 60;
+			input.aPressed = true;
+			player.vel.x -= 60;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-			isMoving = true;
-			playerVelocity.x += 60;
+			input.dPressed = true;
+			player.vel.x += 60;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && !isJumping) {
-			isJumping = true;
-			playerVelocity.y = -980;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && !input.jump) {
+			input.jump = true;
+			player.vel.y = -980;
 		}
 
 		// physics
-		playerVelocity.y += 3920 * dt;
-		if (!isMoving) {
-			playerVelocity.x *= 0.1;
+		player.vel.y += 3920 * dt;
+		if (!input.aPressed && !input.dPressed) {
+			player.vel.x *= 0.1;
 		}
 
 		// clamp velocity
-		playerVelocity.x = std::clamp(playerVelocity.x, -600.f, 600.f);
-		playerVelocity.y = std::clamp(playerVelocity.y, -3920.f, 3920.f);
+		player.vel.x = std::clamp(player.vel.x, -600.f, 600.f);
+		player.vel.y = std::clamp(player.vel.y, -3920.f, 3920.f);
 
-		player.move(playerVelocity * dt);
+		player.move(player.vel * dt);
 
-		sf::Vector2f pos = player.getPosition();
-		if (pos.y > 620.f) {
-			player.setPosition({pos.x, 620.f});
-			playerVelocity.y = 0;
-			isJumping = false;
+		if (player.pos.y > 620.f) {
+			player.setPosition({player.pos.x, 620.f});
+			player.vel.y = 0;
+			input.jump = false;
 		}
 
 		window.clear();
-		window.draw(player);
+		window.draw(player.shape);
 		window.display();
 
 		dt = clock.restart().asSeconds();
