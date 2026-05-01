@@ -1,21 +1,11 @@
-#include <SFML/Graphics.hpp>
+#include <sol/sol.hpp>
+#include <iostream>
 
-int main()
-{
-	sf::RenderWindow window( sf::VideoMode( { 200, 200 } ), "SFML works!" );
-	sf::CircleShape shape( 100.f );
-	shape.setFillColor( sf::Color::Green );
+int main() {
+	sol::state lua;
+	lua.open_libraries(sol::lib::base);
 
-	while ( window.isOpen() )
-	{
-		while ( const std::optional event = window.pollEvent() )
-		{
-			if ( event->is<sf::Event::Closed>() )
-				window.close();
-		}
+	lua.script("print('Lua works')");
 
-		window.clear();
-		window.draw( shape );
-		window.display();
-	}
+	return 0;
 }
