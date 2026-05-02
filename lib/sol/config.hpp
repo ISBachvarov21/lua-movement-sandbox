@@ -48,6 +48,11 @@ the build system, or the command line options of your compiler.
 
 */
 
+// Workaround for Clang compatibility issues with member variables
+#if defined(__clang__)
+    #define SOL_USE_NOEXCEPT 0
+#endif
+
 // end of sol/config.hpp
 
 #endif // SOL_SINGLE_CONFIG_HPP
