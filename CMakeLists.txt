@@ -36,9 +36,15 @@ target_include_directories(lua_static PUBLIC
         ${lua_SOURCE_DIR}/src
 )
 
-target_compile_definitions(lua_static PRIVATE
-        LUA_USE_WINDOWS
-)
+# Platform-specific Lua definitions
+if(WIN32)
+    target_compile_definitions(lua_static PRIVATE LUA_USE_WINDOWS)
+elseif(APPLE)
+    target_compile_definitions(lua_static PRIVATE LUA_USE_MACOSX)
+elseif(UNIX)
+    target_compile_definitions(lua_static PRIVATE LUA_USE_LINUX)
+    target_link_libraries(lua_static PUBLIC dl m)
+endif()
 
 # Your app
 add_executable(main src/main.cpp)
