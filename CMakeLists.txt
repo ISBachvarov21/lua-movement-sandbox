@@ -14,6 +14,15 @@ FetchContent_Declare(SFML
         SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
+# Box2D
+FetchContent_Declare(box2d
+        GIT_REPOSITORY https://github.com/erincatto/box2d.git
+        GIT_TAG v2.4.1
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM)
+FetchContent_MakeAvailable(box2d)
+
 # Lua
 FetchContent_Declare(
         lua
@@ -46,7 +55,6 @@ elseif(UNIX)
     target_link_libraries(lua_static PUBLIC dl m)
 endif()
 
-# Your app
 add_executable(main src/main.cpp)
 
 target_compile_features(main PRIVATE cxx_std_17)
@@ -56,6 +64,7 @@ target_include_directories(main PRIVATE lib)
 target_link_libraries(main PRIVATE
         SFML::Graphics
         lua_static
+        box2d
 )
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
